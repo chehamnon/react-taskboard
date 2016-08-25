@@ -13,7 +13,6 @@ class EmployeeList extends React.Component {
 		this.state = {employees: [], attributes: [], pageSize: 10, links: {}};
 		this.loadMemberFromServer = this.loadMemberFromServer.bind(this);
 		this.onNavigate = this.onNavigate.bind(this);
-		console.log("test222222222222");
 	}
 
 	componentDidMount() {
@@ -29,22 +28,21 @@ class EmployeeList extends React.Component {
 				method: 'GET',
 				path: employeeCollection.entity._links.profile.href,
 				headers: {'Accept': 'application/schema+json'}
-			}).then(schema => { console.log(schema);
+			}).then(schema => {
 				this.schema = schema.entity;
 				this.links = employeeCollection.entity._links;
 				return employeeCollection;
 			});
-		}).then(employeeCollection => { console.log(employeeCollection);
+		}).then(employeeCollection => {
 			return employeeCollection.entity._embedded.employees.map(employee =>
 					client({
 						method: 'GET',
 						path: employee._links.self.href
 					})
 			);
-		}).then(employeePromises => { console.log(employeePromises);
+		}).then(employeePromises => {
 			return when.all(employeePromises);
-		}).done(employees => { console.log(employees); 
-			debugger;
+		}).done(employees => { 
 			this.setState({
 				employees: employees,
 				attributes: Object.keys(this.schema.properties),
@@ -142,6 +140,7 @@ class EmployeeList extends React.Component {
 								<th className="text-info">Description</th>
 								<th></th>
 								<th></th>
+								<th></th>
 			        		</tr>
 			        		{employees}
 			        	</tbody>
@@ -186,6 +185,7 @@ class Employee extends React.Component {
 	    var href = this.props.employee.entity._links.self.href;
         var employeeId = href.substring(href.lastIndexOf('/') + 1);
         var dialogId = "updateEmployee-"+employeeId;
+        var taskId = "taskHistory-"+employeeId;
 		return (
 			<tr>
 				<td>{this.props.employee.entity.member_name}</td>
@@ -195,7 +195,13 @@ class Employee extends React.Component {
 					<button type="button" className="btn btn-success" data-toggle="modal" data-target={'#'+dialogId}>Update</button>
 					<UpdateDialog employee={this.props.employee}
 					  attributes={this.props.attributes}
-					  onUpdate={this.props.onUpdate}/>
+					  loadMemberFromServer = {this.props.loadMemberFromServer}/>
+				</td>
+				<td>
+					<button type="button" className="btn btn-info" data-toggle="modal" data-target={'#'+taskId}>Task History</button>
+					<TaskDialog employee={this.props.employee}
+					  attributes={this.props.attributes}
+					  loadMemberFromServer = {this.props.loadMemberFromServer}/>
 				</td>
 				<td>
 					<button onClick={this.handleDelete} type="button" className="btn btn-primary">Delete</button>
@@ -259,7 +265,7 @@ class CreateDialog extends React.Component {
                 		<div className="modal-content">
                 			<div className="modal-header">
                 				<button type="button" className="close" data-dismiss="modal">&times;</button>
-                				<h4 className="modal-title">Create Employee</h4>
+                				<h4 className="modal-title">Create Member</h4>
                 			</div>
                 			<div className = "modal-body">
                 				{inputs}
@@ -303,7 +309,7 @@ class UpdateDialog extends React.Component {
 				'If-Match': employee.headers.Etag
 			}
 		}).done(response => {
-			this.loadMemberFromServer();
+			this.props.loadMemberFromServer();
 		}, response => {
 			if (response.status.code === 412) {
 				alert('DENIED: Unable to update ' +
@@ -320,7 +326,6 @@ class UpdateDialog extends React.Component {
 			updatedEmployee[attribute] = React.findDOMNode(this.refs[attribute]).value.trim();
 		});
 		this.onUpdate(this.props.employee, updatedEmployee);
-		window.location = "#";
 	}
 
 	render() {
@@ -347,10 +352,80 @@ class UpdateDialog extends React.Component {
                 			<div className = "modal-body">
                 				{inputs}
                 			</div>
+                			<div className = "modal-footer">
+            					<button onClick={this.handleSubmit} type="button" className="btn btn-info" data-dismiss="modal" >Save</button>
+                			</div>
+                		</div>
+                	</div>
+                </div>
+			</div>
+		)
+	}
+};
+// end::update-dialog[]
+
+
+//tag::task-dialog[]
+class TaskDialog extends React.Component {
+
+	constructor(props) {
+		super(props);
+		this.onCreateTask = this.onCreateTask.bind(this);
+		this.handleSubmit = this.handleSubmit.bind(this);
+	}
+
+	// tag::update[]
+	onCreateTask(employee,updatedEmployee) {
+		client({
+			method: 'PUT',
+			path: employee.entity._links.self.href,
+			entity: updatedEmployee,
+			headers: {
+				'Content-Type': 'application/json',
+				'If-Match': employee.headers.Etag
+			}
+		}).done(response => {
+			this.props.loadMemberFromServer();
+		}, response => {
+			if (response.status.code === 412) {
+				alert('DENIED: Unable to update ' +
+					employee.entity._links.self.href + '. Your copy is stale.');
+			}
+		});
+	}
+	// end::update[]
+	
+	handleSubmit(e) {
+		e.preventDefault();
+		var updatedEmployee = {};
+		this.props.attributes.forEach(attribute => {
+			updatedEmployee[attribute] = React.findDOMNode(this.refs[attribute]).value.trim();
+		});
+		this.onCreateTask(this.props.employee, updatedEmployee);
+	}
+
+	render() {
+		var inputs = this.props.attributes.map(attribute =>
+			<p key={attribute}>
+				<input type="hidden" placeholder={attribute}
+					   defaultValue={this.props.employee.entity[attribute]}
+					   ref={attribute} className="form-control" />
+			</p>
+		);
+	    var href = this.props.employee.entity._links.self.href;
+        var employeeId = href.substring(href.lastIndexOf('/') + 1);
+        var dialogId = "taskHistory-"+employeeId;
+		return (
+			<div key={this.props.employee.entity._links.self.href}>
+				<div id={dialogId} className="modal fade">
+                	<div className="modal-dialog">
+                		<div className="modal-content">
                             <div className="modal-header">
-                            	<h4 className="modal-title">Task</h4>
+                            	<button type="button" className="close" data-dismiss="modal">&times;</button>
+                            	<h4 className="modal-title">Task History</h4>
                            	</div>
                            	<div className="modal-body">
+                           		{inputs}
                            		<TaskList employee={this.props.employee}/>
                            	</div>
                 			<div className = "modal-footer">

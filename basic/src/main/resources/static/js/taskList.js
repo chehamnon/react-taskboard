@@ -12,6 +12,7 @@ class TaskList extends React.Component{
     	this.state = {memberId:0, tasks:[], clone:0, newSkill:[]};
     	this.clone = this.clone.bind(this);
     	this.handleSubmit = this.handleSubmit.bind(this);
+		this.loadTaskFromServer = this.loadTaskFromServer.bind(this);
     	this.onCreate = this.onCreate.bind(this);
     }
 
@@ -63,7 +64,7 @@ class TaskList extends React.Component{
             newSkill['task_name'] = React.findDOMNode(this.refs["taskName"+task]).value.trim();
             newSkill['status'] = React.findDOMNode(this.refs["status"+task]).value.trim();
             newSkill['memberId'] = this.state.memberId;
-            this.onCreate(newSkill); console.log(newSkill);
+            this.onCreate(newSkill);
         });
         //console.log(this.state);
     }
@@ -86,7 +87,8 @@ class TaskList extends React.Component{
 
     render(){
         var existingSkills = this.state.tasks.map(task =>
-            <Task key={task.entity._links.self.href} task={task}/>
+            <Task key={task.entity._links.self.href} task={task}
+            loadTaskFromServer = {this.loadTaskFromServer}/>
         );
         var newSkills = this.state.newSkill.map((task) =>
            <p key={task} className="input-group">
@@ -117,18 +119,37 @@ class Task extends React.Component{
 
     constructor(props) {
     	super(props);
+		this.handleDelete = this.handleDelete.bind(this);
     }
 
+	handleDelete() {
+		console.log(this.props.task);
+		this.onDelete(this.props.task);
+	}
+
+	// tag::delete[]
+	onDelete(task) { console.log(task);
+		var href = this.props.task.entity._links.self.href;
+	    var memberId = href.substring(href.lastIndexOf('/') + 1);
+		client({
+			method: 'DELETE', 
+			path: task.entity._links.self.href
+		}).done(response => {
+			this.props.loadTaskFromServer();
+		});
+	}
+	// end::delete[]
+	
     render(){
         return(
             <p className="input-group">
                 <span className="input-group-addon"><span className="glyphicon glyphicon-tag"></span></span>
                 <input type = "text" placeholder = "taskName"
-                    defaultValue = {this.props.task.entity.taskName} className="form-control"/>
+                    defaultValue = {this.props.task.entity.task_name} className="form-control"/>
                 <input type = "text" placeholder = "status"
                     defaultValue = {this.props.task.entity.status} className="form-control"/>
                 <span className="input-group-btn">
-                    <button type="button" className="close" data-dismiss="modal">&nbsp;&nbsp;&times;</button>
+                    <button onClick={this.handleDelete} type="button" className="close">&nbsp;&nbsp;&times;</button>
                 </span>
             </p>
         )
