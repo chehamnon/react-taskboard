@@ -1,4 +1,5 @@
 const React = require('react');
+const ReactDOM = require('react-dom');
 const when = require('../node_modules/when');
 const client = require('./client');
 const follow = require('./follow');
@@ -59,10 +60,10 @@ class TaskList extends React.Component{
 
     handleSubmit(e) {
         e.preventDefault();
-        this.state.newSkill.forEach(task => { console.log(task);
+        this.state.newSkill.forEach(task => {
             var newSkill = {};
-            newSkill['task_name'] = React.findDOMNode(this.refs["taskName"+task]).value.trim();
-            newSkill['status'] = React.findDOMNode(this.refs["status"+task]).value.trim();
+            newSkill['task_name'] = ReactDOM.findDOMNode(this.refs["taskName"+task]).value.trim();
+            newSkill['status'] = ReactDOM.findDOMNode(this.refs["status"+task]).value.trim();
             newSkill['memberId'] = this.state.memberId;
             this.onCreate(newSkill);
         });
@@ -79,8 +80,13 @@ class TaskList extends React.Component{
                 entity: newSkill,
                 headers: {'Content-Type': 'application/json'}
             })
-        }).then(response => {console.log('2');console.log(response);
+        }).then(response => {
             return follow(client, root, [{rel: 'tasks', params: {'size': self.props.pageSize}}]);
+        }).done(response => {
+        	this.setState({
+        		newSkill: []
+        	});
+        	this.loadTaskFromServer();
         });
     }
     // end::create[]

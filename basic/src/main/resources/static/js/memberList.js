@@ -1,4 +1,5 @@
 const React = require('react');
+const ReactDOM = require('react-dom');
 const when = require('../node_modules/when');
 const client = require('./client');
 const follow = require('./follow');
@@ -23,7 +24,7 @@ class EmployeeList extends React.Component {
 	loadMemberFromServer() {
 		follow(client, root, [
 			{rel: 'employees', params: {size: this.state.pageSize}}]
-		).then(employeeCollection => { console.log(employeeCollection);
+		).then(employeeCollection => {
 			return client({
 				method: 'GET',
 				path: employeeCollection.entity._links.profile.href,
@@ -172,9 +173,16 @@ class Employee extends React.Component {
 
 	// tag::delete[]
 	onDelete(employee) {
+    	var href = this.props.employee.entity._links.self.href;
+        var memberId = href.substring(href.lastIndexOf('/') + 1);
 		client({
-			method: 'DELETE', 
-			path: employee.entity._links.self.href
+			method: 'GET', 
+			path: root+'/tasks/search/deleteByMemberId?memberId='+memberId
+        }).then(response => {
+                client({
+                    method: 'DELETE',
+                    path: employee.entity._links.self.href
+                })
 		}).done(response => {
 			this.props.loadMemberFromServer();
 		});
@@ -243,11 +251,11 @@ class CreateDialog extends React.Component {
 		e.preventDefault();
 		var newEmployee = {};
 		this.props.attributes.forEach(attribute => {
-			newEmployee[attribute] = React.findDOMNode(this.refs[attribute]).value.trim();
+			newEmployee[attribute] = ReactDOM.findDOMNode(this.refs[attribute]).value.trim();
 		});
 		this.onCreate(newEmployee);
 		this.props.attributes.forEach(attribute => {
-			React.findDOMNode(this.refs[attribute]).value = ''; // clear out the dialog's inputs
+			ReactDOM.findDOMNode(this.refs[attribute]).value = ''; // clear out the dialog's inputs
 		});
 		window.location = "#";
 	}
@@ -323,7 +331,7 @@ class UpdateDialog extends React.Component {
 		e.preventDefault();
 		var updatedEmployee = {};
 		this.props.attributes.forEach(attribute => {
-			updatedEmployee[attribute] = React.findDOMNode(this.refs[attribute]).value.trim();
+			updatedEmployee[attribute] = ReactDOM.findDOMNode(this.refs[attribute]).value.trim();
 		});
 		this.onUpdate(this.props.employee, updatedEmployee);
 	}
@@ -399,7 +407,7 @@ class TaskDialog extends React.Component {
 		e.preventDefault();
 		var updatedEmployee = {};
 		this.props.attributes.forEach(attribute => {
-			updatedEmployee[attribute] = React.findDOMNode(this.refs[attribute]).value.trim();
+			updatedEmployee[attribute] = ReactDOM.findDOMNode(this.refs[attribute]).value.trim();
 		});
 		this.onCreateTask(this.props.employee, updatedEmployee);
 	}
