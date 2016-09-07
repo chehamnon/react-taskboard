@@ -18,37 +18,51 @@ class DataTaskList extends React.Component {
 		this.loadDataTaskFromServer();
 	}
 	
-	// tag::load member from server
-	loadDataTaskFromServer() {
+	loadDataTaskFromServer(){
 		follow(client, root, [
-			{rel: 'tasks', params: {size: this.state.pageSize}}]
-		).then(datataskCollection => {
-			return client({
-				method: 'GET',
-				path: datataskCollection.entity._links.profile.href,
-				headers: {'Accept': 'application/schema+json'}
-			}).then(schema => {
-				this.schema = schema.entity;
-				this.links = datataskCollection.entity._links;
-				return datataskCollection;
-			});
-		}).then(datataskCollection => {
-			return datataskCollection.entity._embedded.tasks.map(task =>
-					client({
-						method: 'GET',
-						path: task._links.self.href
-					})
-			);
-		}).then(datataskPromises => {
-			return when.all(datataskPromises);
-		}).done(tasks => { 
-			this.setState({
-				tasks: tasks,
-				attributes: Object.keys(this.schema.properties),
-				pageSize: this.state.pageSize,
-				links: this.links
-			});
-		});
+		      				{rel: 'tasks', params: {size: this.state.pageSize}}]
+		      		).then(taskCollection => {
+		      			return client({
+		      				method: 'GET',
+		      				path: taskCollection.entity._links.profile.href,
+		      				headers: {'Accept': 'application/schema+json'}
+		      			}).then(schema => {
+		      				// tag::json-schema-filter[]
+		      				/**
+		      				 * Filter unneeded JSON Schema properties, like uri references and
+		      				 * subtypes ($ref).
+		      				 */
+		      				Object.keys(schema.entity.properties).forEach(function (property) {
+		      					if (schema.entity.properties[property].hasOwnProperty('format') &&
+		      						schema.entity.properties[property].format === 'uri') {
+		      						delete schema.entity.properties[property];
+		      					}
+		      				});
+
+		      				this.schema = schema.entity;
+		      				this.links = taskCollection.entity._links;
+		      				return taskCollection;
+		      				// end::json-schema-filter[]
+		      			});
+		      		}).then(taskCollection => {
+		      			this.page = taskCollection.entity.page;
+		      			return taskCollection.entity._embedded.tasks.map(task =>
+		      					client({
+		      						method: 'GET',
+		      						path: task._links.self.href
+		      					})
+		      			);
+		      		}).then(taskPromises => {
+		      			return when.all(taskPromises);
+		      		}).done(tasks => {
+		      			this.setState({
+		      				page: this.page,
+		      				tasks: tasks,
+		      				attributes: Object.keys(this.schema.properties),
+		      				pageSize: this.state.pageSize,
+		      				links: this.links
+		      			});
+		      		});
 	}
 	// end::load member from server
 	
@@ -75,7 +89,7 @@ class DataTaskList extends React.Component {
 			        		<tr>
 								<th className="text-info">Task Name</th>
 								<th className="text-info">Status</th>
-								<th className="text-info">Member ID</th>
+								<th className="text-info">Member Name</th>
 			        		</tr>
 			        		{tasks}
 			        	</tbody>
@@ -103,7 +117,7 @@ class DataTask extends React.Component {
 			<tr>
 				<td>{this.props.task.entity.task_name}</td>
 				<td>{this.props.task.entity.status}</td>
-				<td>{this.props.task.entity.memberId}</td>
+				<td>{this.props.task.entity.employee.member_name}</td>
 			</tr>
 		)
 	}

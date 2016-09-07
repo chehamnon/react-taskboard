@@ -1,15 +1,15 @@
 package com.greglturnquist.payroll;
 
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 /**
  * @author Marissa
  */
 // tag::code[]
-public interface EmployeeRepository extends PagingAndSortingRepository<Employee, Long> {
-	  @Transactional
-	  Employee findMemberByMemberId(@Param("memberId") Long memberId);
+public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+	Employee save(Employee employee);
+	Employee findByMemberId(Long memberId);
 }
 // end::code[]

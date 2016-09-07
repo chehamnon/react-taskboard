@@ -18,6 +18,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
@@ -42,21 +44,19 @@ public class Task {
 	    @Column
 	    private String status;
 
-	    @Column
-	    private Long memberId;
-
-	    @Transient
-	    private Employee employee;
+		private @ManyToOne
+		Employee employee;
 	    
 	    @Version
 	    @JsonIgnore
 	    private Long version;
 
-	    private Task() {}
+		private Task() {}
 
-	    public Task(String task_name, String status) {
+	    public Task(String task_name, String status, Employee employee) {
 	        this.task_name = task_name;
 	        this.status = status;
+	        this.employee = employee;
 	}
 
 		public Long getTaskId() {
@@ -83,14 +83,6 @@ public class Task {
 			this.status = status;
 		}
 
-		public Long getMemberId() {
-			return memberId;
-		}
-
-		public void setMemberId(Long memberId) {
-			this.memberId = memberId;
-		}
-
 		public Employee getEmployee() {
 			return employee;
 		}
@@ -106,7 +98,6 @@ public class Task {
 		public void setVersion(Long version) {
 			this.version = version;
 		}
-	    
 	    
 }
 // end::code[]

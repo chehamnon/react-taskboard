@@ -14,13 +14,15 @@
 	<groupId>com.greglturnquist</groupId>
 	<artifactId>react-and-spring-data-rest-basic</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+	<packaging>war</packaging>
 
 	<name>React.js and Spring Data REST - Basic</name>
 	<description>An SPA with ReactJS in the frontend and Spring Data REST in the backend</description>
 
 	<properties>
+		<start-class>com.greglturnquist.payroll.ReactAndSpringDataRestApplication</start-class>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<tomcat.version>7.0.68</tomcat.version>
 		<java.version>1.8</java.version>
 	</properties>
 
@@ -58,10 +60,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-    		<groupId>org.springframework.boot</groupId>
-    		<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
     		<groupId>org.hsqldb</groupId>
     		<artifactId>hsqldb</artifactId>
     		<scope>runtime</scope>
@@ -88,25 +86,6 @@
 					<workingDirectory>src/main/resources/static</workingDirectory>
 				</configuration>
 				<executions>
-					<execution>
-						<id>install node and npm</id>
-						<goals>
-							<goal>install-node-and-npm</goal>
-						</goals>
-						<configuration>
-							<nodeVersion>v4.4.5</nodeVersion>
-							<npmVersion>3.9.2</npmVersion>
-						</configuration>
-					</execution>
-					<execution>
-						<id>npm install</id>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<configuration>
-							<arguments>install</arguments>
-						</configuration>
-					</execution>
 					<execution>
 						<id>webpack build</id>
 						<goals>

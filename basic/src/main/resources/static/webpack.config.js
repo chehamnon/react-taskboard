@@ -4,7 +4,7 @@ var node_dir = __dirname + '/node_modules';
 module.exports = {
     entry: './app.js',
     devtool: 'sourcemaps',
-    cache: true,
+    cache: false,
     debug: true,
     output: {
         path: __dirname,

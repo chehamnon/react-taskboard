@@ -1,3 +1,5 @@
+'use strict';
+
 const React = require('react');
 import NavLink from './js/navLink'
 import Home from './js/Home';
@@ -39,12 +41,12 @@ class App extends React.Component {
 
 render((
 	<Router history={browserHistory}>
-		    <Route path="/" component={App}>
-			    <Route path="/About" component={About}/>
-			    <Route path="/Home" component={Home}/>
-			    <Route path="/Task" component={Task}/>
-			    <Route path="/Project" component={Project}/>
-			    <Route path="/Board" component={Board}/>
+		    <Route path="react/" component={App}>
+			    <Route path="/react/About" component={About}/>
+			    <Route path="/react/Home" component={Home}/>
+			    <Route path="/react/Task" component={Task}/>
+			    <Route path="/react/Project" component={Project}/>
+			    <Route path="/react/Board" component={Board}/>
 			 </Route>
 	</Router>),
 	document.getElementById('react')

@@ -13,15 +13,12 @@ package com.greglturnquist.payroll;
 // * See the License for the specific language governing permissions and
 // * limitations under the License.
 
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 import javax.persistence.Version;
 
 import lombok.Data;
@@ -37,11 +34,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Employee {
 
 	@Id @GeneratedValue(strategy=GenerationType.IDENTITY) Long memberId;
-	
-    	@JsonIgnore
-    	@OneToMany
-    	@JoinColumn(insertable = false, updatable = false, name = "memberId", referencedColumnName = "memberId")
-    	private List<Task> task;
 	 	
     	@Column
 	    private String member_name;
@@ -56,15 +48,12 @@ public class Employee {
 	    @JsonIgnore
 	    private Long version;
 
-	    private Employee() {}
+	    Employee() {}
 
 	    public Employee(String member_name, String member_role, String description) {
 	        this.member_name = member_name;
 	        this.member_role = member_role;
 	        this.description = description;
-	}
-	    public void setTask(List<Task> task) {
-	        this.task = task;
 	}
 
 		public Long getMemberId() {
@@ -105,10 +94,6 @@ public class Employee {
 
 		public void setVersion(Long version) {
 			this.version = version;
-		}
-
-		public List<Task> getTask() {
-			return task;
 		}
 	    
 }

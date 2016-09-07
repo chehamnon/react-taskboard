@@ -17,6 +17,7 @@ class EmployeeList extends React.Component {
 	}
 
 	componentDidMount() {
+		debugger;
 		this.loadMemberFromServer();
 	}
 	

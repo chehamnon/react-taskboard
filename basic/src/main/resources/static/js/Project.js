@@ -8,9 +8,6 @@ export default React.createClass({
     		<div className="col-xs-12">
     			<div>
 					<h2 className="text-info"> Project </h2>
-					<p>
-						Under Maintenance
-					</p>
 				</div>
 			</div>
     	</div>
